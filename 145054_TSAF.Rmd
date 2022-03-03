@@ -1,0 +1,153 @@
+---
+title: "Time Series Analysis and Forecasting Assignment"
+author: '145054'
+date: "12/7/2021"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+```{r}
+#installing libraries
+library(forecast)
+library(tseries)
+library(fpp)
+```
+
+```{r echo=TRUE}
+#importing the dataset
+df<-read.csv("AMZN.csv")
+```
+
+
+```{r}
+#looking at the first 5 columns of the data
+head(df)
+```
+```{r echo=TRUE}
+#subsetting the dataframe to select columns of interest
+data<-df[,c('Date','Adj.Close')]
+```
+```{r}
+#first 5 columns of the data
+head(data)
+```
+```{r}
+#converting the data to a time series data
+y<-ts(data[,2],start=c(2016,1),frequency = 12)
+```
+
+```{r echo=TRUE}
+#inspecting the last 5 columns of the dataset
+tail(data)
+```
+```{r echo=TRUE}
+#checking for missing values
+sum(is.na(data))
+```
+```{r}
+#time plot
+autoplot(y)
+  
+```
+```{r}
+#data has a strong trend
+#take the first difference of the data to remove trend
+dy<-diff(y)
+```
+
+```{r}
+#plot of the differenced data dy
+autoplot(dy)
+```
+```{r}
+#investigating seasonality in differenced data
+ggseasonplot(dy)
+```
+```{r}
+ggsubseriesplot(dy)
+```
+```{r}
+fit<-naive(dy)
+print(summary(fit))
+checkresiduals(fit)
+```
+```{r}
+#ARIMA model
+fit_arima<-auto.arima(y,d=1,D=1,stepwise = FALSE,approximation = FALSE,trace=TRUE)
+print(summary(fit_arima))
+checkresiduals(fit_arima)
+```
+```{r}
+#forecasting
+ft<-forecast(fit_arima,h=24)
+autoplot(ft,include = 60)
+print(summary(ft))
+```
+
+
+```{r echo=TRUE}
+summary(data)
+```
+```{r echo=TRUE}
+#plotting the raw data
+plot.ts(data$Adj.Close)
+```
+```{r}
+cycle(data['Date',"Adj.Close"])
+```
+```{r}
+#decomposing data into various decompose functions
+tsdata<-ts(data$Adj.Close,frequency = 12)
+ddata<-decompose(tsdata,'multiplicative')
+```
+```{r}
+#plot the data to show decomposed functions
+plot(ddata)
+```
+```{r}
+#plotting the individual components 
+#plotting the trend
+plot(ddata$trend)
+```
+```{r}
+#plotting seasonality
+plot(ddata$seasonal)
+```
+```{r}
+#plotting randomness
+plot(ddata$random)
+```
+```{r}
+#trend of the original data
+plot.ts(data$Adj.Close)
+abline(reg = lm(data$Adj.Close~time(data$Adj.Close)))
+```
+```{r}
+#fitting arima model
+mymodel<-auto.arima(data$Adj.Close)
+mymodel
+auto.arima(data$Adj.Close,ic="aic",trace = TRUE)
+```
+```{r}
+#checking the plot for residuals which shows stationarity
+plot.ts(mymodel$residuals)
+```
+```{r}
+#plotting ACF and PACF
+#ADF
+#adf.test(mymodel)
+```
+
+```{r}
+#acf
+acf(ts(mymodel$residuals),main="Auto correlation function")
+```
+```{r}
+#pacf
+pacf(ts(mymodel$residuals),main='PACF Residual')
+```
+
