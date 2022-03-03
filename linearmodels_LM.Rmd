@@ -1,0 +1,77 @@
+---
+title: "Linear Regression Assignment 1"
+author: "145054_Henry_Kyalo"
+date: "2/25/2022"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+#importing packages
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+```
+In this data, i intend to to do a simple linear regresion and linear mod of predicting salaries depending on the years of experience that one has in the market.
+
+ 
+
+```{r}
+df<-read_excel("Data1.xlsx")
+```
+```{r}
+# inspecting the data
+head(df)
+```
+
+```{r}
+# any missing values?
+sum(is.na(df))
+```
+The dataset has no missing values as the sum of is.na () function returns 0.
+```{r}
+#getting summary statistics of the dataset
+summary(df)
+```
+```{r}
+# checking for normality of the dependent variables using hist function
+hist(df$`Years of Experience`)
+```
+
+```{r}
+#checking for linearity of independent and dependent variable
+plot(Salaries ~ `Years of Experience`,data=df)
+```
+From the plot above, we can conclude that there is some linearity around our data points, although most of the points are likely to be outliers.
+```{r}
+# performing linear regression model
+salaries.yearsofexperience.lm<-lm(Salaries ~ `Years of Experience`,data = df)
+summary(salaries.yearsofexperience.lm)
+```
+From the table above, we can conclude that there is significant positive relationship between Salaries and years of experience (P-value < 0.001), with a 93.645 unit increase in Salaries for every unit increase in  years of experince. 
+```{r}
+#Checking for simple regression homoscedasticity
+par(mfrow=c(2,2))
+plot(salaries.yearsofexperience.lm)
+par(mfrow=c(1,1))
+```
+Looking at the red lines, they are not horizontal or centered around zero, and therefore, this means our data has outliers or biases which could render our linear regression invalid.
+```{r}
+#visualizing the results with a graph
+salaries.graph<-ggplot(df,aes(x=`Years of Experience`,y=Salaries))+
+  geom_point()
+salaries.graph
+```
+```{r}
+#adding linear regression to the plotted graph
+salaries.graph<-salaries.graph + geom_smooth(model='lm',col='black')
+salaries.graph
+```
+
+
+
